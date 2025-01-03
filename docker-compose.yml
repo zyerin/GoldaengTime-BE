@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: ../goldangtime
+    image: goldengtime-docker/backend:latest
+    ports:
+      - "8080:8080"
+    environment:
+       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    networks:
+      - goldengtime-network
+
+networks:
+  goldengtime-network:
+    driver: bridge
