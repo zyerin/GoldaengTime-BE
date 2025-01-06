@@ -1,4 +1,4 @@
-package com.goldang.goldangtime.jwt;
+package com.goldang.goldangtime.entity;
 
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Builder
 public class CustomUserDetails implements UserDetails {
 
-    private String username;
+    private String username;    // email
 
     private String password;
 
