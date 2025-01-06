@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "user")
 @Getter
@@ -11,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,4 +34,5 @@ public class User {
 
     @Column(name = "fcm_token")
     private String fcmToken;
+
 }
