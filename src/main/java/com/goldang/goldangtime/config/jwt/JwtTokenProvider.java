@@ -1,4 +1,4 @@
-package com.goldang.goldangtime.jwt;
+package com.goldang.goldangtime.config.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
