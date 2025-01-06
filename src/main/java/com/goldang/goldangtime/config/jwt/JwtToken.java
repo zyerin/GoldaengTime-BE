@@ -1,4 +1,4 @@
-package com.goldang.goldangtime.jwt;
+package com.goldang.goldangtime.config.jwt;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
