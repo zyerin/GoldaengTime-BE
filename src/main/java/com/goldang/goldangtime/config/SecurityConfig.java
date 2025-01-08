@@ -29,7 +29,8 @@ public class SecurityConfig {
                 .csrf((cs)->cs.disable())
                 // JWT를 사용하기 때문에 세션을 사용하지 않음
                 .sessionManagement((sm)->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((ahr)->ahr.requestMatchers("/user/**").permitAll())
+                .authorizeHttpRequests((ahr)->ahr.requestMatchers("/user/**").permitAll()
+                        .anyRequest().authenticated())
                 // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();
     }

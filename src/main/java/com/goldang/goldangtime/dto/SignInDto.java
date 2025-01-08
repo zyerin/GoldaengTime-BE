@@ -12,4 +12,5 @@ import lombok.ToString;
 public class SignInDto {
     private String email;
     private String password;
+    private String fcmToken;
 }
