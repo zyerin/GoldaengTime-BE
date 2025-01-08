@@ -33,8 +33,10 @@ public class UserController {
     public JwtToken signIn(@RequestBody SignInDto signInDto) {
         String email = signInDto.getEmail();
         String password = signInDto.getPassword();
-        JwtToken jwtToken = userService.signIn(signInDto.getEmail(), signInDto.getPassword());
-        log.info("Request email = {}, password = {}", email, password);
+        String fcmToken = signInDto.getFcmToken();
+        log.info("Request email = {}, password = {}, fcmToken = {}", email, password, fcmToken);
+
+        JwtToken jwtToken = userService.signIn(email, password, fcmToken);
         log.info("JwtToken accessToken = {}, refreshToken = {}", jwtToken.getAccessToken(), jwtToken.getRefreshToken());
         return jwtToken;
     }
