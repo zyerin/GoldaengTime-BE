@@ -1,33 +1,15 @@
 package com.goldang.goldangtime.dto;
 
-import com.goldang.goldangtime.entity.Comment;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
-public class AddCommentRequest {
-    private Long id;
-    private String text;
-    private String createdDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
-    private String modifiedDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"));
-    private String user;
-    private int lostPost;
-    private int foundPost;
-
-    public Comment toEntity() {//생성자를 사용해 객체 생성
-        return Comment.builder()
-                .text(text)
-                .createdDate(createdDate)
-                .modifiedDate(modifiedDate)
-                .user(user)
-                .lostPost(lostPost)
-                .foundPost(foundPost)
-                .build();
-    }
+@Setter
+public class CommentRequestDto {
+    private Long postId; // LostPost or FoundPost ID
+    private String text; // 댓글 내용
+    private Boolean secret; // 비밀 댓글 여부
+    private String postType; // lost 또는 found
+    private Long parentCommentId;  // 부모 댓글 ID(해당 댓글이 답글인 경우 설정)
 }
+
