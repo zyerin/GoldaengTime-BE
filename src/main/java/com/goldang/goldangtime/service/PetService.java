@@ -16,6 +16,7 @@ public class PetService {
     private final PetRepository petRepository;
     private final UserRepository userRepository;
 
+    // 반려동물 정보 저장
     @Transactional
     public Pets savePet(PetRequestDto petRequestDto) {
         // 사용자 조회
@@ -36,5 +37,7 @@ public class PetService {
 
         return petRepository.save(pet);
     }
+
+
 }
 
