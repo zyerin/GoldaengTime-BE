@@ -27,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // 해당하는 User 의 데이터가 존재한다면 UserDetails 객체로 만들어서 return
     private UserDetails createUserDetails(Users users) {
-        return User.builder()
+        return CustomUserDetails.builder()
                 .username(users.getEmail())
                 .password(users.getPassword())
                 .build();
