@@ -1,5 +1,6 @@
 package com.goldang.goldangtime.config.jwt;
 
+import com.goldang.goldangtime.entity.CustomUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -14,10 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -61,9 +59,16 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String accessToken) {
         // Jwt 토큰 복호화
         Claims claims = parseClaims(accessToken);
+        log.info("(JwtTokenProvider getAuthentication) claim.getSubject: {}", claims.getSubject());
 
-        // UserDetails 객체 생성
-        UserDetails principal = new User(claims.getSubject(), "", new ArrayList<>()); // 권한 없이 생성
+        // 권한 정보가 없는 경우에도 예외를 던지지 않음
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        // CustomUserDetails 객체 생성
+        CustomUserDetails principal = CustomUserDetails.builder()
+                .username(claims.getSubject())
+                .password("")
+                .build();
         return new UsernamePasswordAuthenticationToken(principal, "", new ArrayList<>());
     }
 
