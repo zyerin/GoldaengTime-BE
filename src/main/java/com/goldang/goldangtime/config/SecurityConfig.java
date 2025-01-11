@@ -26,7 +26,8 @@ public class SecurityConfig {
         return httpSecurity.httpBasic((hp)->hp.disable())
                 .csrf((cs)->cs.disable())
                 .sessionManagement((sm)->sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((ahr)->ahr.requestMatchers("/user/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll())
+                .authorizeHttpRequests((ahr)->ahr.requestMatchers("/user/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .anyRequest().authenticated())
                 // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();
     }
