@@ -1,21 +1,23 @@
 package com.goldang.goldangtime.service;
 
+import com.goldang.goldangtime.dto.FcmRequestDto;
 import com.goldang.goldangtime.dto.LostPostDto;
 import com.goldang.goldangtime.dto.FoundPostDto;
 import com.goldang.goldangtime.entity.LostPost;
 import com.goldang.goldangtime.entity.FoundPost;
+import com.goldang.goldangtime.entity.Matching;
 import com.goldang.goldangtime.repository.LostPostRepository;
 import com.goldang.goldangtime.repository.FoundPostRepository;
+import com.goldang.goldangtime.repository.MatchingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MatchingService {
@@ -23,19 +25,22 @@ public class MatchingService {
     private final GoogleCloudVisionService visionService;
     private final LostPostRepository lostPostRepository;
     private final FoundPostRepository foundPostRepository;
+    private final MatchingRepository matchingRepository;
+    private final FcmRequestService fcmRequestService;
+
 
     /**
-     * 발견 게시글의 이미지를 기반으로 유사도가 높은 실종 게시글 ID와 유사도 리스트 반환
+     * 발견 게시글의 이미지를 기반으로 유사도가 높은 실종 게시글 ID와 유사도를 계산 후 Matching 엔티티에 저장.
      *
      * @param foundPost 발견 게시글
-     * @return 유사도가 높은 순으로 정렬된 실종 게시글 ID와 유사도 리스트
+     * @return 저장된 Matching 엔티티 리스트
      */
-    public List<Map<String, Object>> compareWithLostPosts(FoundPost foundPost) throws IOException {
+    public List<Matching> compareAndSaveMatches(FoundPost foundPost) throws IOException {
         List<Double> foundFeatures = visionService.getImageFeatures(foundPost.getFoundPhoto());
 
         // 모든 실종 게시글과의 유사도 계산
         List<LostPost> lostPosts = lostPostRepository.findAll();
-        List<Map<String, Object>> results = new ArrayList<>();
+        List<Matching> savedMatches = new ArrayList<>();
 
         for (LostPost lostPost : lostPosts) {
             List<Double> lostFeatures = visionService.getImageFeatures(lostPost.getLostPhoto());
@@ -48,17 +53,24 @@ public class MatchingService {
             // 유사도 계산
             double similarity = calculateCosineSimilarity(normalizedFoundFeatures, normalizedLostFeatures);
 
-            // 결과 추가
-            Map<String, Object> result = new HashMap<>();
-            result.put("id", lostPost.getId());
-            result.put("similarity", similarity);
-            results.add(result);
+            // Matching 엔티티 생성 및 저장
+            Matching matching = Matching.builder()
+                    .foundPost(foundPost)
+                    .lostPosts(Set.of(lostPost)) // LostPost는 Set으로 관리
+                    .similarity(similarity)
+                    .status(similarity >= 0.85) // 유사도가 0.85 이상인 경우 true
+                    .build();
+
+            matchingRepository.save(matching);
+            savedMatches.add(matching);
+
+            // 유사도가 0.85 이상인 경우(status가 true인 경우) FCM 알림 전송
+            if (matching.getStatus()) {
+                sendFcmNotification(lostPost, foundPost);
+            }
         }
 
-        // 유사도 점수로 정렬
-        return results.stream()
-                .sorted((a, b) -> Double.compare((double) b.get("similarity"), (double) a.get("similarity")))
-                .collect(Collectors.toList());
+        return savedMatches;
     }
 
     /**
@@ -92,6 +104,38 @@ public class MatchingService {
             normalizedVector.add(0.0); // 부족한 값을 0.0으로 채움
         }
         return normalizedVector;
+    }
+
+    // 푸시알림 전송 메서드 -> status가 true인 실종 게시글 작성자에게
+    private void sendFcmNotification(LostPost lostPost, FoundPost foundPost) {
+        try {
+            // LostPost 작성자의 FCM 토큰 가져오기
+            String fcmToken = lostPost.getUser().getFcmToken();
+            log.info("{}'s FCM Token: {}", lostPost.getUser().getNickname(), fcmToken);
+
+            // 알림 내용 작성
+            FcmRequestDto.Notification notification = FcmRequestDto.Notification.builder()
+                    .title("GoldaengTime")
+                    .body("귀하의 실종 게시글과 유사한 발견 게시글이 등록되었습니다: " + foundPost.getTitle())
+                    .build();
+
+            // 데이터 작성
+            FcmRequestDto.Data data = FcmRequestDto.Data.builder()
+                    .foundPostId(String.valueOf(foundPost.getId()))
+                    .build();
+
+            // FCM 요청 생성
+            FcmRequestDto requestDto = FcmRequestDto.builder()
+                    .fcmToken(fcmToken)
+                    .notification(notification)
+                    .data(data)
+                    .build();
+
+            // FCM 메시지 전송
+            fcmRequestService.sendMessage(requestDto);
+        } catch (Exception e) {
+            log.error("Failed to send FCM notification for LostPost ID {}: {}", lostPost.getId(), e.getMessage());
+        }
     }
 
     // 매칭된 발견된 게시글 목록 조회

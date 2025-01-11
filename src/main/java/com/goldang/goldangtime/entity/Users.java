@@ -35,4 +35,6 @@ public class Users {
     @Column(name = "fcm_token")
     private String fcmToken;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Scrap> scraps = new ArrayList<>();
 }

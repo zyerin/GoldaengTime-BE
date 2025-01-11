@@ -7,6 +7,7 @@ import com.goldang.goldangtime.service.FoundPostService;
 
 import com.goldang.goldangtime.service.MatchingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -46,11 +47,18 @@ public class FoundPostController {
     public List<FoundPostDto> getAllFoundPosts(){
         return foundPostService.getAllFoundPosts();
     }
-    
+
     @PostMapping
-    @Operation(summary =  "FoundPost 생성")
-    public FoundPostDto createdFoundPost(@RequestBody FoundPostDto foundPostDTO) {
-        return foundPostService.createFoundPost(foundPostDTO);
+    @Operation(summary = "FoundPost 생성")
+    public ResponseEntity<?> createdFoundPost(@RequestBody FoundPostDto foundPostDTO) {
+        try {
+            FoundPostDto createdPost = foundPostService.createFoundPost(foundPostDTO);
+            return ResponseEntity.ok(createdPost);
+        } catch (IOException e) {
+            // 오류 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create FoundPost: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
