@@ -22,6 +22,7 @@ public class FoundPostService {
 
     private final FoundPostRepository foundPostRepository;
     private final UserService userService;
+    private final MatchingService matchingService;
 
     public List<FoundPostDto> getAllFoundPosts() {
         return foundPostRepository.findAll()
@@ -39,9 +40,14 @@ public class FoundPostService {
 
     // 발견된 게시글 생성
     @Transactional
-    public FoundPostDto createFoundPost(FoundPostDto foundPostDTO) {
+    public FoundPostDto createFoundPost(FoundPostDto foundPostDTO) throws IOException {
         FoundPost foundPost = convertToEntity(foundPostDTO);
-        return convertToDTO(foundPostRepository.save(foundPost));
+        FoundPost savedPost = foundPostRepository.save(foundPost);
+
+        // 발견된 게시글 생성 후 유사도 비교 및 매칭 저장
+        matchingService.compareAndSaveMatches(savedPost);
+
+        return convertToDTO(savedPost);
     }
 
     // 엔티티를 DTO로 변환
