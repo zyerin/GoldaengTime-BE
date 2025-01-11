@@ -16,7 +16,13 @@ public class FirebaseConfig {
     @PostConstruct
     public void initialize() {
         try {
+            // ClassPath 경로로 참조
             var serviceAccount = new ClassPathResource("firebase/goldaengtime-firebase-adminsdk.json").getInputStream();
+
+            // 상대경로 지정
+//            FileInputStream serviceAccount =
+//                    new FileInputStream("/app/firebase/goldaengtime-firebase-adminsdk.json.json");
+
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))

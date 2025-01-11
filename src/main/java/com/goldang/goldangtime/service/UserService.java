@@ -58,4 +58,10 @@ public class UserService {
 
         return jwtToken;
     }
+
+    // 특정 사용자 조회
+    public Users getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+    }
 }
