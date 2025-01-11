@@ -42,21 +42,41 @@ public class CommentService {
                 .modifiedDate(LocalDateTime.now())
                 .build();
 
+        Long postId = null;
+        String postType = null;
+
         // 부모 댓글이 있는 경우 (답글)
         if (requestDto.getParentCommentId() != null) {
             Comment parentComment = commentRepository.findById(requestDto.getParentCommentId())
                     .orElseThrow(() -> new IllegalArgumentException("Parent comment not found"));
             comment.setParentComment(parentComment);
+
+            // 부모 댓글에서 postId와 postType 가져오기
+            if (parentComment.getLostPost() != null) {
+                postId = parentComment.getLostPost().getId();
+                postType = "Lost";
+                comment.setLostPost(parentComment.getLostPost());
+            } else if (parentComment.getFoundPost() != null) {
+                postId = parentComment.getFoundPost().getId();
+                postType = "Found";
+                comment.setFoundPost(parentComment.getFoundPost());
+            } else {
+                throw new IllegalArgumentException("Parent comment is not associated with any post");
+            }
         } else {
             // LostPost인지 FoundPost인지 확인
             if ("lost".equalsIgnoreCase(requestDto.getPostType())) {
                 LostPost lostPost = lostPostRepository.findById(requestDto.getPostId())
                         .orElseThrow(() -> new IllegalArgumentException("Lost post not found"));
                 comment.setLostPost(lostPost);
+                postId = lostPost.getId();
+                postType = "Lost";
             } else if ("found".equalsIgnoreCase(requestDto.getPostType())) {
                 FoundPost foundPost = foundPostRepository.findById(requestDto.getPostId())
                         .orElseThrow(() -> new IllegalArgumentException("Found post not found"));
                 comment.setFoundPost(foundPost);
+                postId = foundPost.getId();
+                postType = "Found";
             } else {
                 throw new IllegalArgumentException("Invalid post type");
             }
@@ -71,8 +91,12 @@ public class CommentService {
                 .secret(savedComment.getSecret())
                 .createdDate(savedComment.getCreatedDate())
                 .modifiedDate(savedComment.getModifiedDate())
+                .postId(postId)
+                .postType(postType)
                 .build();
     }
+
+
 
     @Transactional
     public CommentResponseDto updateComment(Long commentId, String email, CommentRequestDto requestDto) {
@@ -125,11 +149,11 @@ public class CommentService {
         }
 
         return comments.stream()
-                .map(this::mapToResponseDto)
+                .map(comment -> mapToResponseDto(comment, postId, postType))
                 .collect(Collectors.toList());
     }
 
-    private CommentResponseDto mapToResponseDto(Comment comment) {
+    private CommentResponseDto mapToResponseDto(Comment comment, Long postId, String postType) {
         return CommentResponseDto.builder()
                 .id(comment.getId())
                 .username(comment.getUser().getNickname())
@@ -138,9 +162,12 @@ public class CommentService {
                 .createdDate(comment.getCreatedDate())
                 .modifiedDate(comment.getModifiedDate())
                 .replies(comment.getReplies().stream()
-                        .map(this::mapToResponseDto)
+                        .map(reply -> mapToResponseDto(reply, postId, postType))
                         .collect(Collectors.toList()))
+                .postId(postId)
+                .postType(postType)
                 .build();
     }
+
 
 }

@@ -1,5 +1,6 @@
 package com.goldang.goldangtime.controller;
 
+import com.goldang.goldangtime.dto.CommentResponseDto;
 import com.goldang.goldangtime.dto.MyPageResponseDto;
 import com.goldang.goldangtime.dto.ProfileRequestDto;
 import com.goldang.goldangtime.entity.Comment;
@@ -39,8 +40,8 @@ public class MyPageController {
 
     // 내가 쓴 댓글 조회
     @GetMapping("/{userId}/comments")
-    public ResponseEntity<List<Comment>> getUserComments(@PathVariable Long userId) {
-        List<Comment> userComments = myPageService.getUserComments(userId);
+    public ResponseEntity<List<CommentResponseDto>> getUserComments(@PathVariable Long userId) {
+        List<CommentResponseDto> userComments = myPageService.getUserComments(userId);
         return ResponseEntity.ok(userComments);
     }
 

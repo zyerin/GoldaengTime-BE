@@ -5,10 +5,13 @@ import com.goldang.goldangtime.entity.LostPost;
 import com.goldang.goldangtime.entity.Pets;
 import com.goldang.goldangtime.entity.Users;
 import com.goldang.goldangtime.repository.LostPostRepository;
+import com.goldang.goldangtime.repository.PetRepository;
+import com.goldang.goldangtime.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LostPostService {
 
+    private final UserRepository userRepository;
+    private final PetRepository petRepository;
     private final LostPostRepository lostPostRepository;
     private final UserService userService; // UserService 의존성 추가
    
@@ -36,8 +41,16 @@ public class LostPostService {
 
     // 게시글 생성
     @Transactional
-    public LostPostDto createLostPost(LostPostDto lostPostDTO) {
-        LostPost lostPost = convertToEntity(lostPostDTO);
+    public LostPostDto createLostPost(LostPostDto lostPostDto) {
+        // 사용자 조회
+        Users user = userRepository.findById(lostPostDto.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Pet 조회
+        Pets pet = petRepository.findById(lostPostDto.getPetId())
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found"));
+
+        LostPost lostPost = convertToEntity(lostPostDto, user, pet);    // 엔티티 변환
         return convertToDTO(lostPostRepository.save(lostPost));
     }
 
@@ -57,24 +70,17 @@ public class LostPostService {
                 .build();
     }
 
-    // DTO를 엔티티로 변환
-    private LostPost convertToEntity(LostPostDto dto) {
-        LostPost lostPost = LostPost.builder()
-                .id(dto.getId())
+    private LostPost convertToEntity(LostPostDto dto, Users user, Pets pet) {
+        return LostPost.builder()
+                .user(user)
+                .pet(pet)
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .location(dto.getLocation())
-                .lostPhoto(dto.getLostPhoto())
                 .status(dto.getStatus())
-                .scrap(dto.getScrap())
+                .lostPhoto(dto.getLostPhoto())
+                .createdAt(LocalDateTime.now()) // 현재 시간 설정
+                .scrap(0) // 초기 스크랩 수는 0
                 .build();
-
-        // User 설정
-        if (dto.getUserId() != null) {
-            Users user = userService.getUserById(dto.getUserId()); // UserService에서 사용자 조회
-            lostPost.setUser(user);
-        }
-
-        return lostPost;
     }
 }

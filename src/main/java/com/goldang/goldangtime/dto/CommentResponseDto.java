@@ -16,5 +16,6 @@ public class CommentResponseDto {
     private LocalDateTime createdDate; // 작성 시간
     private LocalDateTime modifiedDate; // 수정 시간
     private List<CommentResponseDto> replies; // 답글 리스트
+    private Long postId; // 댓글이 달린 게시글 ID
+    private String postType; // 게시글 타입 (Lost 또는 Found)
 }
-
