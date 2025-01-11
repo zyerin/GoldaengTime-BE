@@ -1,5 +1,6 @@
 package com.goldang.goldangtime.service;
 
+import com.goldang.goldangtime.dto.CommentResponseDto;
 import com.goldang.goldangtime.dto.MyPageResponseDto;
 import com.goldang.goldangtime.entity.Comment;
 import com.goldang.goldangtime.entity.LostPost;
@@ -27,7 +28,7 @@ public class MyPageService {
     public Users updateProfile(Long userId, String nickname, String userPhoto) {
         // 사용자 조회
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // 닉네임과 프로필 사진 수정
         user.setNickname(nickname);
@@ -39,7 +40,7 @@ public class MyPageService {
     // 사용자가 작성한 글 조회 -> MyPageResponseDto 반환
     public List<MyPageResponseDto> getUserPosts(Long userId) {
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // 사용자가 작성한 LostPost 조회 및 변환
         List<MyPageResponseDto> lostPosts = lostPostRepository.findAllByUser(user).stream()
@@ -58,17 +59,20 @@ public class MyPageService {
     }
 
 
-    // 사용자가 쓴 댓글 조회
-    public List<Comment> getUserComments(Long userId) {
+    // 사용자가 쓴 댓글 조회 -> CommentResponseDto 반환
+    public List<CommentResponseDto> getUserComments(Long userId) {
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        return commentRepository.findAllByUser(user);
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        return commentRepository.findAllByUser(user).stream()
+                .map(this::convertCommentToDto)
+                .collect(Collectors.toList());
     }
 
     // 사용자가 스크랩한 게시글 조회 -> MyPageResponseDto 반환
     public List<MyPageResponseDto> getUserScraps(Long userId) {
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         List<Scrap> scraps = scrapRepository.findAllByUser(user);
 
@@ -106,4 +110,34 @@ public class MyPageService {
                 .createdAt(foundPost.getCreatedAt())
                 .build();
     }
+
+    // Comment를 CommentResponseDto로 변환
+    private CommentResponseDto convertCommentToDto(Comment comment) {
+        String postType;
+        Long postId;
+
+        // LostPost 또는 FoundPost 중 연결된 게시글 확인
+        if (comment.getLostPost() != null) {
+            postType = "LostPost";
+            postId = comment.getLostPost().getId();
+        } else if (comment.getFoundPost() != null) {
+            postType = "FoundPost";
+            postId = comment.getFoundPost().getId();
+        } else {
+            throw new IllegalStateException("Comment is not linked to any LostPost or FoundPost");
+        }
+
+        return CommentResponseDto.builder()
+                .id(comment.getId())
+                .username(comment.getUser().getNickname())
+                .text(comment.getText())
+                .secret(comment.getSecret())
+                .createdDate(comment.getCreatedDate())
+                .modifiedDate(comment.getModifiedDate())
+                .postId(postId) // 게시글 ID 추가
+                .postType(postType) // 게시글 타입 추가
+                .replies(null)  // null로 반환 고정
+                .build();
+    }
+
 }
