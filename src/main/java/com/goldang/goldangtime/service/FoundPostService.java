@@ -3,10 +3,12 @@ package com.goldang.goldangtime.service;
 import com.goldang.goldangtime.entity.FoundPost;
 import com.goldang.goldangtime.entity.LostPost;
 import com.goldang.goldangtime.repository.LostPostRepository;
+import com.goldang.goldangtime.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import com.goldang.goldangtime.dto.FoundPostDto;
 import com.goldang.goldangtime.entity.Users;
@@ -22,6 +24,7 @@ public class FoundPostService {
 
     private final FoundPostRepository foundPostRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final MatchingService matchingService;
 
     public List<FoundPostDto> getAllFoundPosts() {
@@ -40,8 +43,12 @@ public class FoundPostService {
 
     // 발견된 게시글 생성
     @Transactional
-    public FoundPostDto createFoundPost(FoundPostDto foundPostDTO) throws IOException {
-        FoundPost foundPost = convertToEntity(foundPostDTO);
+    public FoundPostDto createFoundPost(FoundPostDto foundPostDto) throws IOException {
+        // 사용자 조회
+        Users user = userRepository.findById(foundPostDto.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        FoundPost foundPost = convertToEntity(foundPostDto, user);
         FoundPost savedPost = foundPostRepository.save(foundPost);
 
         // 발견된 게시글 생성 후 유사도 비교 및 매칭 저장
@@ -65,21 +72,15 @@ public class FoundPostService {
     }
 
     // DTO를 엔티티로 변환
-    private FoundPost convertToEntity(FoundPostDto dto) {
-        FoundPost foundPost = FoundPost.builder()
-                .id(dto.getId())
+    private FoundPost convertToEntity(FoundPostDto dto, Users user) {
+        return FoundPost.builder()
+                .user(user)
                 .title(dto.getTitle())
                 .description(dto.getDescription())
-                .location(dto.getLocation())
                 .foundPhoto(dto.getFoundPhoto())
-                .scrap(dto.getScrap())
+                .location(dto.getLocation())
+                .createdAt(LocalDateTime.now()) // 현재 시간 설정
+                .scrap(0) // 초기 스크랩 수는 0
                 .build();
-
-        // User 설정
-        if (dto.getUserId() != null) {
-            Users user = userService.getUserById(dto.getUserId()); // UserService에서 사용자 조회
-            foundPost.setUser(user);
-        }
-        return foundPost;
     }
 }
