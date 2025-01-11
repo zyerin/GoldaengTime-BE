@@ -1,7 +1,7 @@
 services:
   backend:
     build: ../goldangtime
-    image: zyerin/goldaeng:latest
+    image: goldengtime-docker/backend:latest
     ports:
       - "8080:8080"
     environment:
