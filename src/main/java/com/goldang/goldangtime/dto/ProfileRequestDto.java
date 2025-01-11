@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class MyPageDto {
+public class ProfileRequestDto {
     private String nickname;
     private String userPhoto;
 }
