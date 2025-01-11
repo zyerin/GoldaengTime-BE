@@ -34,14 +34,6 @@ public class FoundPostController {
     private final MatchingService matchingService;
     private final FoundPostService foundPostService;
 
-    // 발견 게시글의 이미지를 기반으로 실종 게시글과의 유사도 비교
-    @PostMapping("/compare")
-    @Operation(summary = "발견 게시글 이미지로 실종 반려동물 자동 매칭")
-    public ResponseEntity<List<Map<String, Object>>> compareFoundPost(@RequestBody FoundPost foundPost) throws IOException {
-        List<Map<String, Object>> matchedPosts = matchingService.compareWithLostPosts(foundPost);
-        return ResponseEntity.ok(matchedPosts); // 유사도가 높은 순으로 정렬된 실종 게시글 ID 리스트 반환
-    }
-
     @GetMapping
     @Operation(summary  = "모든 FoundPost 조회")
     public List<FoundPostDto> getAllFoundPosts(){
