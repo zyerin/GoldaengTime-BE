@@ -28,13 +28,7 @@ public class MatchingService {
     private final MatchingRepository matchingRepository;
     private final FcmRequestService fcmRequestService;
 
-
-    /**
-     * 발견 게시글의 이미지를 기반으로 유사도가 높은 실종 게시글 ID와 유사도를 계산 후 Matching 엔티티에 저장.
-     *
-     * @param foundPost 발견 게시글
-     * @return 저장된 Matching 엔티티 리스트
-     */
+    // 발견 게시글의 이미지를 기반으로 유사도가 높은 실종 게시글 ID와 유사도를 계산 후 Matching 엔티티에 저장
     public List<Matching> compareAndSaveMatches(FoundPost foundPost) throws IOException {
         List<Double> foundFeatures = visionService.getImageFeatures(foundPost.getFoundPhoto());
 
@@ -69,17 +63,10 @@ public class MatchingService {
                 sendFcmNotification(lostPost, foundPost);
             }
         }
-
-        return savedMatches;
+        return savedMatches;    // 저장된 Matching 엔티티 리스트 반환
     }
 
-    /**
-     * 두 벡터 간의 코사인 유사도 계산
-     *
-     * @param vectorA 첫 번째 벡터
-     * @param vectorB 두 번째 벡터
-     * @return 코사인 유사도 점수
-     */
+    // 두 벡터 간의 코사인 유사도 계산
     private double calculateCosineSimilarity(List<Double> vectorA, List<Double> vectorB) {
         if (vectorA.size() != vectorB.size()) {
             throw new IllegalArgumentException("The vectors have different sizes: vectorA=" + vectorA.size() + ", vectorB=" + vectorB.size());
@@ -95,7 +82,7 @@ public class MatchingService {
             normB += Math.pow(vectorB.get(i), 2);
         }
 
-        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));  // 유사도 점수 반환
     }
 
     private List<Double> normalizeVectorSize(List<Double> vector, int targetSize) {
