@@ -46,6 +46,13 @@ dependencies {
 
 	// FCM
 	implementation 'com.google.firebase:firebase-admin:8.1.0'
+
+	// Google Cloud Vision
+	implementation ('com.google.cloud:google-cloud-vision:3.54.0'){
+		exclude group: 'com.google.protobuf', module: 'protobuf-java'
+	}
+	implementation 'com.google.protobuf:protobuf-java:4.29.0'
+
 }
 
 tasks.named('test') {
