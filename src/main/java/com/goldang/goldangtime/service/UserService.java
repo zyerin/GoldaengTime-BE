@@ -42,6 +42,7 @@ public class UserService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
         log.info("Passed signIn 1");
 
+        // AuthenticationManager에서 CustomUserDetailsService의 loadUserByUsername을 호출
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("Passed signIn 2");
 
