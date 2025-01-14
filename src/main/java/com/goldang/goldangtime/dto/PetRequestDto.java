@@ -13,7 +13,5 @@ public class PetRequestDto {
     private String residence;
     private String feature;
     private String petPhoto;
-
-    private Long userId; // 사용자 ID
 }
 
