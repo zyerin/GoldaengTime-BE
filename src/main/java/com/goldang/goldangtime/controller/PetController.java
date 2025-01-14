@@ -25,6 +25,7 @@ public class PetController {
     @PostMapping("/save")
     @Operation(summary = "반려동물 정보 저장")
     public ResponseEntity<Pets> savePet(@RequestBody PetRequestDto petRequestDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        log.info("Received PetRequestDto: {}", petRequestDto);
         String email = userDetails.getUsername();
         Pets pet = petService.savePet(petRequestDto, email);
         return ResponseEntity.ok(pet);
