@@ -20,63 +20,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
       - name: Run Tests
-        run: ./gradlew test
+        run: ./gradlew test -Dspring.profiles.active=test
 
       - name: Upload Test Results
-        if: success()
+        if: failure()
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: build/reports/tests/test
-
-  deploy:
-    name: Deploy Application
-    runs-on: ubuntu-latest
-    needs: test
-    if: ${{ github.event.pull_request.merged == true }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
-
-      - name: Build Application
-        run: ./gradlew clean build
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifact
-          path: build/libs/
