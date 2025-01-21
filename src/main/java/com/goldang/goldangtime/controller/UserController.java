@@ -4,6 +4,8 @@ import com.goldang.goldangtime.dto.SignInDto;
 import com.goldang.goldangtime.dto.SignUpDto;
 import com.goldang.goldangtime.config.jwt.JwtToken;
 import com.goldang.goldangtime.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/sign-up")
+    @Operation(summary = "회원가입")
     public ResponseEntity<String> signUp(@RequestBody SignUpDto signUpDto){
         try {
             String result = userService.signUp(signUpDto.getEmail(), signUpDto.getPassword(), signUpDto.getNickname());
@@ -30,11 +33,14 @@ public class UserController {
     }
 
     @PostMapping("/sign-in")
+    @Operation(summary = "로그인")
     public JwtToken signIn(@RequestBody SignInDto signInDto) {
         String email = signInDto.getEmail();
         String password = signInDto.getPassword();
-        JwtToken jwtToken = userService.signIn(signInDto.getEmail(), signInDto.getPassword());
-        log.info("Request email = {}, password = {}", email, password);
+        String fcmToken = signInDto.getFcmToken();
+        log.info("Request email = {}, password = {}, fcmToken = {}", email, password, fcmToken);
+
+        JwtToken jwtToken = userService.signIn(email, password, fcmToken);
         log.info("JwtToken accessToken = {}, refreshToken = {}", jwtToken.getAccessToken(), jwtToken.getRefreshToken());
         return jwtToken;
     }

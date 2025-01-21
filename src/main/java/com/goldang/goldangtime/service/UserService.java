@@ -13,9 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.Optional;
-
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -31,27 +28,41 @@ public class UserService {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("User already exist.");
         }
-        Users users = new Users();
-        users.setEmail(email);
-        users.setPassword(passwordEncoder.encode(password));
-        users.setNickname(nickname);
+        Users user = new Users();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setNickname(nickname);
 
-        userRepository.save(users);
+        userRepository.save(user);
         return "Sign Up Successfully";
     }
 
     @Transactional
-    public JwtToken signIn(String email, String password) {
+    public JwtToken signIn(String email, String password, String fcmToken) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
         log.info("Passed signIn 1");
 
+        // AuthenticationManager에서 CustomUserDetailsService의 loadUserByUsername을 호출
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("Passed signIn 2");
+
+        // 인증된 사용자 조회
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        // fcmToken 업데이트
+        user.setFcmToken(fcmToken);
+        log.info("Updated fcmToken for user: {}", email);
 
         // jwt 토큰 생성
         JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
         log.info("Passed signIn 3");
 
         return jwtToken;
+    }
+
+    // 특정 사용자 조회
+    public Users getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
     }
 }

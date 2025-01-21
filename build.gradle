@@ -35,6 +35,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	// Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -43,6 +44,21 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// FCM
+	implementation 'com.google.firebase:firebase-admin:8.1.0'
+
+	// Google Cloud Vision
+	implementation ('com.google.cloud:google-cloud-vision:3.54.0'){
+		exclude group: 'com.google.protobuf', module: 'protobuf-java'
+	}
+	implementation 'com.google.protobuf:protobuf-java:4.29.0'
+
+	//Swagger 적용
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+	implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }
 
 tasks.named('test') {

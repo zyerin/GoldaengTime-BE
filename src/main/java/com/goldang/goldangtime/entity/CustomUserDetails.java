@@ -20,14 +20,9 @@ public class CustomUserDetails implements UserDetails {
 
     private String password;
 
-
-    @Builder.Default
-    private List<String> roles = new ArrayList<>();
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        return new ArrayList<>(); // 권한이 없으므로 빈 리스트 반환
     }
 
     @Override
